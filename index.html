@@ -1,41 +1,196 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="si">
+
 <head>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local Storage Example</title>
+  <meta charset="UTF-8">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>දිනපතා භාවනා ලඝු සටහන</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .log {
+      margin-top: 20px;
+      background-color: #e6ffe6;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .tracker {
+      margin-top: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #d9ead3;
+    }
+    td.done {
+      background-color: #c9f7c9;
+    }
+    td.pending {
+      background-color: #ffe6e6;
+    }
+  </style>
 </head>
 <body>
-    <h1>Local Storage Example</h1>
-    <form id="storageForm">
-        <label for="dataInput">Enter data to store:</label>
-        <input type="text" id="dataInput" placeholder="Type something">
-        <button type="submit">Save to Local Storage</button>
-    </form>
+  <div class="container">
+    <h2>දිනපතා භාවනා පුරුදු ලඝු සටහන</h2>
+    <label for="metta">Metta + Mindfulness භාවනාව:</label>
+    <textarea id="metta" rows="2"></textarea><label for="dhamma">දහම් කරුණ:</label>
+<textarea id="dhamma" rows="2"></textarea>
 
-    <button id="loadData">Load Stored Data</button>
-    <p id="output"></p>
+<label for="asubha">අසුබ භාවනාව:</label>
+<textarea id="asubha" rows="2"></textarea>
 
-    <script>
-        // Save to Local Storage
-        document.getElementById('storageForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent form submission
-            const inputData = document.getElementById('dataInput').value;
-            localStorage.setItem('storedData', inputData);
-            alert('Data saved to local storage!');
-        });
+<label for="reflection">රාත්‍රි reflection එක:</label>
+<textarea id="reflection" rows="2"></textarea>
 
-        // Load from Local Storage
-        document.getElementById('loadData').addEventListener('click', function() {
-            const storedData = localStorage.getItem('storedData');
-            const outputElement = document.getElementById('output');
-            if (storedData) {
-                outputElement.textContent = `Stored Data: ${storedData}`;
-            } else {
-                outputElement.textContent = 'No data found in local storage.';
-            }
-        });
-    </script>
-</body>
+<button onclick="saveLog()">සටහන් කරන්න</button>
+
+<div id="log" class="log"></div>
+
+<div class="tracker">
+  <h3>දින 30 භාවනා Tracker</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>දිනය</th>
+        <th>භාවනා අවසන්ද?</th>
+      </tr>
+    </thead>
+    <tbody id="tracker-body"></tbody>
+  </table>
+</div>
+
+  </div>  <script>
+  function saveLog() {
+    const metta = document.getElementById("metta").value;
+    const dhamma = document.getElementById("dhamma").value;
+    const asubha = document.getElementById("asubha").value;
+    const reflection = document.getElementById("reflection").value;
+    const date = new Date().toLocaleDateString();
+
+    const logContent = `<strong>${date}</strong><br>
+      <strong>Metta + Mindfulness:</strong> ${metta}<br>
+      <strong>දහම් කරුණ:</strong> ${dhamma}<br>
+      <strong>අසුබ භාවනාව:</strong> ${asubha}<br>
+      <strong>රාත්‍රි reflection:</strong> ${reflection}<br><hr>`;
+
+    // Save log to local storage
+    const existingLogs = localStorage.getItem("logs") || "";
+    localStorage.setItem("logs", logContent + existingLogs);
+
+    document.getElementById("log").innerHTML = logContent + document.getElementById("log").innerHTML;
+
+    document.getElementById("metta").value = "";
+    document.getElementById("dhamma").value = "";
+    document.getElementById("asubha").value = "";
+    document.getElementById("reflection").value = "";
+
+    markDayDone();
+  }
+
+  function markDayDone() {
+    const today = new Date().toLocaleDateString();
+    const cells = document.querySelectorAll("#tracker-body td.date");
+    cells.forEach(cell => {
+      if (cell.innerText === today) {
+        cell.nextElementSibling.classList.remove("pending");
+        cell.nextElementSibling.classList.add("done");
+        cell.nextElementSibling.innerText = "කරන ලදි";
+
+        // Save tracker status to local storage
+        const trackerData = JSON.parse(localStorage.getItem("tracker")) || {};
+        trackerData[today] = "done";
+        localStorage.setItem("tracker", JSON.stringify(trackerData));
+      }
+    });
+  }
+
+  function generateTracker() {
+    const tbody = document.getElementById("tracker-body");
+    const today = new Date();
+    const trackerData = JSON.parse(localStorage.getItem("tracker")) || {};
+
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(today.getDate() + i);
+      const tr = document.createElement("tr");
+      const tdDate = document.createElement("td");
+      const tdStatus = document.createElement("td");
+      tdDate.classList.add("date");
+      tdDate.innerText = date.toLocaleDateString();
+
+      // Load tracker status from local storage
+      if (trackerData[tdDate.innerText] === "done") {
+        tdStatus.classList.add("done");
+        tdStatus.innerText = "කරන ලදි";
+      } else {
+        tdStatus.classList.add("pending");
+        tdStatus.innerText = "නැත";
+      }
+
+      tr.appendChild(tdDate);
+      tr.appendChild(tdStatus);
+      tbody.appendChild(tr);
+    }
+  }
+
+  function loadLogs() {
+    // Load logs from local storage
+    const savedLogs = localStorage.getItem("logs") || "";
+    document.getElementById("log").innerHTML = savedLogs;
+  }
+
+  // Load data on page load
+  window.onload = function () {
+    loadLogs();
+    generateTracker();
+  };
+</script></body>
 </html>
